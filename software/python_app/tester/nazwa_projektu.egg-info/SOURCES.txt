@@ -1,0 +1,9 @@
+setup.py
+Packages/__init__.py
+Packages/mainwin.py
+bin/main.py
+nazwa_projektu.egg-info/PKG-INFO
+nazwa_projektu.egg-info/SOURCES.txt
+nazwa_projektu.egg-info/dependency_links.txt
+nazwa_projektu.egg-info/requires.txt
+nazwa_projektu.egg-info/top_level.txt
