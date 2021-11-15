@@ -1,0 +1,4 @@
+nose
+PyQt6
+PySerial
+keyboard

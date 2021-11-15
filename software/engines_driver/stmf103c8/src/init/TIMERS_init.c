@@ -9,7 +9,7 @@
 
 
 #define SysTick_Fre 72000000		//czestotliwosc 9MHz jesli dzielnik 8 (72/8 = 9)
-__IO uint16_t CC1 = 32768;
+//__IO uint16_t CC1 = 32768;
 
 
 void tim1_init(void)
