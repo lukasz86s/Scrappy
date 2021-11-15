@@ -195,7 +195,7 @@ void TIM1_CC_IRQHandler(void)
 				steps = engines.engine_counter[i];
 				if(steps)
 					{
-						// count down until it reaches zero , 1 count == 1ms
+						// count down until it reaches zero
 					if((speed[i]--) == 0)//engine.engine_counter[i] % engine.engine_speed[i] == 0)
 					{
 						// decrease step
@@ -226,7 +226,7 @@ void TIM1_CC_IRQHandler(void)
 
 
 		// ponowne zaladowanie licznika
-		TIM_SetCompare1(TIM1, TIM_GetCapture1(TIM1)+1000);
+		TIM_SetCompare1(TIM1, TIM_GetCapture1(TIM1)+TIMER1_PERIOD);
 
 	}
 

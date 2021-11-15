@@ -9,10 +9,15 @@
 #define INIT_COMMON_H_
 #include "stm32f10x.h"
 #include "USART_init.h"
-#include <string.h>
 #include "engine.h"
+#include <string.h>
+
 
 #define START_OF_FRAME ':'
+
+#define CALCULATE_TIMER1_PERIOD(x) ((x)*500) - 1
+// timer period in ms , put integer values
+#define TIMER1_PERIOD CALCULATE_TIMER1_PERIOD(1)
 
 uint8_t command_recived;
 char command[3];

@@ -11,21 +11,21 @@ void gpio_init(void)
 	GPIO_InitTypeDef GPIO_InitStructure;
 
 	// konfiguracja portów i pinów
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_11;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_5|GPIO_Pin_6|GPIO_Pin_7|GPIO_Pin_8|GPIO_Pin_9|GPIO_Pin_12;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
 
 
 	// konfiguracja pionow jako wejscie (do przerwan)
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+	//GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
+	//GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	//GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
 	//zapisanie ustawien dla portu B
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	//GPIO_Init(GPIOA, &GPIO_InitStructure);
 
 	// poinformuj uc o zródle przerwan
-	GPIO_EXTILineConfig(GPIO_PortSourceGPIOA, GPIO_PinSource0);
+	//GPIO_EXTILineConfig(GPIO_PortSourceGPIOA, GPIO_PinSource0);
 
 //----------------------------------- konfuguraca pinow obslugujacych USART
 	// konfiguracja pinu 9 jako wyjscie usart tx
@@ -41,13 +41,13 @@ void gpio_init(void)
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
 	// konfiguracja pionow jako wejscie (do przerwan)
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+	//GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
+	//GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	//GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
 	//zapisanie ustawien dla portu B
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	//GPIO_Init(GPIOB, &GPIO_InitStructure);
 
-	GPIO_EXTILineConfig(GPIO_PortSourceGPIOB, GPIO_PinSource0);
+	//GPIO_EXTILineConfig(GPIO_PortSourceGPIOB, GPIO_PinSource0);
 
 
 }

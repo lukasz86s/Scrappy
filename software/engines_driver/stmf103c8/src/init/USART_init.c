@@ -174,7 +174,8 @@ void parse_rx_buff(volatile data_buf *buf, char *command)
 		command[i] = buf_readbyte(buf);
 	}
 }
-//zwraca bufor z ustawiona pozycja na poczatek ramki
+// todo: remove return statement or volatile type
+//return pointer of buf with set "start" frame position
 data_buf *find_start_of_frame (volatile data_buf *rx_buf){
 	while(!buf_empty(rx_buf)){
 		if(buf_readbyte(rx_buf) == START_OF_FRAME)

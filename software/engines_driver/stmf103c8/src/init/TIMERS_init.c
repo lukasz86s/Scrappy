@@ -4,8 +4,9 @@
  *  Created on: 11.11.2019
  *      Author: fet
  */
-#include "stm32f10x.h"
-#include "stm32f10x_it.h"
+#include "TIMERS_init.h"
+
+
 
 #define SysTick_Fre 72000000		//czestotliwosc 9MHz jesli dzielnik 8 (72/8 = 9)
 __IO uint16_t CC1 = 32768;
@@ -33,7 +34,7 @@ void tim1_init(void)
 	// konfiguracja kanalu 1
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_Timing;
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-	TIM_OCInitStructure.TIM_Pulse = 1000;  				// ustawienia licznika na 1ms co daje 1000khz/ 1000 = 1khz
+	TIM_OCInitStructure.TIM_Pulse = TIMER1_PERIOD;  				// set period
 	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
 	TIM_OC1Init(TIM1, &TIM_OCInitStructure);
 

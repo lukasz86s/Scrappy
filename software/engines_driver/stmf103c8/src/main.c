@@ -74,17 +74,17 @@ int main(void)
 	while(1)
 	{
 
-		//pierwszy licznik
+		//pierwszy licznik (test sprawdzajacy przebieg na wyjsciu)
 		if(!sys_tims[sys_tim1])
 			{
 		    static uint8_t position = 0;
 			position ^=1;
 			if(position){
-				//GPIO_SetBits(GPIOB, GPIO_Pin_0);
+				//GPIO_SetBits(GPIOB, GPIO_Pin_4);
 
 			}
 			else{
-				//GPIO_ResetBits(GPIOB, GPIO_Pin_0);
+				//GPIO_ResetBits(GPIOB, GPIO_Pin_4);
 
 			}
 
@@ -139,7 +139,7 @@ void parse_comand(data_buf *rx_buf)
 					steps |= ( hex_char_to_dec(buf_readbyte(rx_buf))<<(12-i*4) );
 					}
 				// set direction output
-				GPIO_WriteBit(GPIOB, engines.engine_dir[nr_engine],dir );
+				GPIO_WriteBit(GPIOB, engines.engine_dir_pins[nr_engine],dir );
 				// assign  steps to appropriate engine
 				engines.engine_counter[nr_engine] = steps;
 			}
@@ -158,7 +158,7 @@ void parse_comand(data_buf *rx_buf)
 				// get continuous vale
 				uint8_t continous = (buf_readbyte(rx_buf) - '0');
 				// set direction output
-				GPIO_WriteBit(GPIOB, engines.engine_dir[nr_engine],dir );
+				GPIO_WriteBit(GPIOB, engines.engine_dir_pins[nr_engine],dir );
 				// set continuous value 1 - work, 0 - stop
 				engines.engine_continuous_work[nr_engine] = continous;
 
