@@ -1080,7 +1080,7 @@ Discarded input sections
  .data          0x00000000        0x0 src/init/RCC_init.o
  .bss           0x00000000        0x0 src/init/RCC_init.o
  .text          0x00000000        0x0 src/init/TIMERS_init.o
- .data          0x00000000        0x2 src/init/TIMERS_init.o
+ .data          0x00000000        0x0 src/init/TIMERS_init.o
  .bss           0x00000000        0x0 src/init/TIMERS_init.o
  .text          0x00000000        0x0 src/init/USART_init.o
  .bss           0x00000000       0x40 src/init/USART_init.o

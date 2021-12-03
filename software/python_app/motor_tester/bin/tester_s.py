@@ -1,4 +1,3 @@
-from typing import NamedTuple
-from tester.motor_tester import startApp
+from tester import motor_tester
 if __name__ == '__main__':
-    startApp()
+    motor_tester.startApp()

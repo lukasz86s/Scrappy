@@ -125,15 +125,17 @@ void parse_comand(data_buf *rx_buf)
 	{
 	// ruch silnika
 	case '1':
-		// do momentu az pobierzesz wszystkie dane
+		// while get all data
 		while(len_of_data>0)
 			{
 				len_of_data -= 6;
-				// pobierz numer silnika
+				// get engine number
 				uint8_t nr_engine = (buf_readbyte(rx_buf) - '0');
+				//get move direction
 				uint8_t dir = (buf_readbyte(rx_buf) - '0');
+
 				uint16_t steps = 0;
-				// pobieranie 4 wartosci i konwersja z str(szesnastowo)
+				// pobieranie 4 wartosci i konwersja z str(hex)
 				for (uint8_t i = 0 ; i<4; i++)
 					{
 					steps |= ( hex_char_to_dec(buf_readbyte(rx_buf))<<(12-i*4) );

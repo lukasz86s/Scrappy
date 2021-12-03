@@ -158,6 +158,7 @@ void TIM1_CC_IRQHandler(void)
 	{
 		uint32_t outputs = 0;
 		uint16_t steps ;
+		uint8_t continuous_work;
 		static uint16_t speed[NR_OF_ENGINS];
 
 
@@ -169,15 +170,16 @@ void TIM1_CC_IRQHandler(void)
 		//if(position) ENGINE_PORT |= 0x00000002;
 		//else ENGINE_PORT |= 0x00020000;
 		//GPIO_WriteBit(GPIOB, E0_PIN,GPIO_ReadInputDataBit(GPIOB,E0_PIN)^1 ); NR_OF_ENGINS
-		for(uint8_t i = 0 ; i<5; i++)
+		for(uint8_t i = 0 ; i<NR_OF_ENGINS; i++)
 		{
-			uint8_t continuous_work = engines.engine_continuous_work[i];
+			//todo: change to pointer
+			continuous_work = engines.engine_continuous_work[i];
 
 			// if continuous_work is 1 then only  change the output to the opposite
 			if(continuous_work){
 
 				if((speed[i]--) == 0){
-					// zmieñ na poziom wyjscia na przeciwny
+					// change output to the opposite
 					if(ENGINE_PINS_V & engine_pins[i])
 						{
 						 outputs |= (engine_pins[i] << 16);
@@ -193,6 +195,7 @@ void TIM1_CC_IRQHandler(void)
 			}
 			else{
 				steps = engines.engine_counter[i];
+				// if there are any steps left
 				if(steps)
 					{
 						// count down until it reaches zero
