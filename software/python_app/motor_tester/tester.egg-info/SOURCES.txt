@@ -3,6 +3,7 @@ bin/tester_s.py
 tester/__init__.py
 tester/__main__.py
 tester/mainwindow.py
+tester/mainwindow_test.py
 tester/motor_tester.py
 tester.egg-info/PKG-INFO
 tester.egg-info/SOURCES.txt

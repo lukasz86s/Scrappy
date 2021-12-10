@@ -1,4 +1,7 @@
-from tester.mainwindow import Ui_MainWindow as MainWin
+try:
+    from tester.mainwindow import Ui_MainWindow as MainWin
+except ModuleNotFoundError:
+    from mainwindow import Ui_MainWindow as MainWin
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
@@ -8,6 +11,7 @@ import keyboard
 from threading import Thread
 import time
 import sys
+
 
 
 BAUD_RATE_TABLE = ("2400",
@@ -22,18 +26,23 @@ BAUD_RATE_TABLE = ("2400",
                    "115200",
                    "230400")
 
-
 class MyMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.isclosed = False
 
+    def add_threads_to_close(self, *args):
+        self.threads = args
+
     def closeEvent(self, a0) -> None:
         super().closeEvent(a0)
         self.isclosed = True
-
+        for thread in self.threads:
+            thread.join()
+                    
 
 class MainWindow:
+
     def __init__(self):
         self.main_win = MyMainWindow()
         self.ui = MainWin()
@@ -42,6 +51,7 @@ class MainWindow:
         self.serialPort = None
         self.read_port_thread = Thread(target=self.read_port)
         self.keyboard_thread = Thread(target=self.keyboard_remote)
+        self.main_win.add_threads_to_close(self.read_port_thread, self.keyboard_thread)
         #mapping engines directions to the pairs of keys
         self.control_keys = {'engine1': ['w', 's'],
                              'engine2': ['a', 'd'],
@@ -54,8 +64,8 @@ class MainWindow:
                                         'engine4': '3'}
 
     def serial_connect(self, byte_size=8, stop_bits=1):
-        port = self.ui.comboBox.currentText().strip()
-        baud_rate = int(self.ui.comboBox_2.currentText())
+        port = self.ui.port_comboBox.currentText().strip()
+        baud_rate = int(self.ui.baud_rate_comboBox.currentText())
         # check if port is not open or not exist , then create and open
         if self.serialPort is None or not self.serialPort.is_open:
             try:
@@ -63,7 +73,7 @@ class MainWindow:
                 #view info on view list screen
                 self.model.appendRow(QStandardItem("connected:"))
                 #change text on button
-                self.ui.pushButton_2.setText("Disconnect")
+                self.ui.connect_com_button.setText("Disconnect")
             except SerialException:
                 # view  exception in widget list screen
                 self.model.appendRow(QStandardItem("error: connected problems"))
@@ -73,7 +83,7 @@ class MainWindow:
                 # view  info in widget list screen
                 self.model.appendRow(QStandardItem("disconnected:"))
                 # change text on button
-                self.ui.pushButton_2.setText("Connect")
+                self.ui.connect_com_button.setText("Connect")
             except SerialException:
                 # view  exception in widget list screen
                 self.model.appendRow(QStandardItem("error: disconnect problems"))
@@ -101,7 +111,7 @@ class MainWindow:
             if self.serialPort and self.serialPort.is_open:
                 #todo:maybe ping connection every 1s or cyclical sending information about engine movement
                 # keys are connected in pairs, to the opposite side
-                # forward and backward keys ar in  control_keys['engine1'][0] and controls_keys['engine1'][1]
+                # forward and backward keys are in  control_keys['engine1'][0] and controls_keys['engine1'][1]
                 for i in self.control_keys.keys():
                     #check if key is pressed or released
                     status_f = self.key_status(self.control_keys[i][0])
@@ -139,12 +149,12 @@ class MainWindow:
         return 'not_press'
 
     def refresh_com_list(self):
-        self.ui.comboBox.clear()
-        self.ui.comboBox.addItems([str(i)[0:5].strip() for i in comports()])
+        self.ui.port_comboBox.clear()
+        self.ui.port_comboBox.addItems([str(i)[0:5].strip() for i in comports()])
 
     def move_button(self):
-        engine = self.ui.comboBox_3.currentText()
-        direction = self.ui.comboBox_4.currentText()
+        engine = self.ui.engine_comboBox.currentText()
+        direction = self.ui.direction_comboBox.currentText()
         direction = '1' if direction == 'left' else '0'
         steps = self.ui.lineEdit.text()
         # parse string , if not hex convert and remove starting '0x'
@@ -168,23 +178,47 @@ class MainWindow:
         if self.serialPort and self.serialPort.is_open:
             self.serialPort.write(raw_frame)
 
+    def rb_com_ports(self):
+        self.ui.connect_com_button.setEnabled(True)
+        self.ui.refreshe_button.setEnabled(True)
+        self.ui.port_comboBox.setEnabled(True)
+        self.ui.baud_rate_comboBox.setEnabled(True)
+
+        self.ui.bind_ip_button.setEnabled(False)
+        self.ui.ip_lineEdit.setEnabled(False)
+        self.ui.port_lineEdit.setEnabled(False)
+
+    def rb_tcp_ip(self):
+        self.ui.bind_ip_button.setEnabled(True)
+        self.ui.ip_lineEdit.setEnabled(True)
+        self.ui.port_lineEdit.setEnabled(True)   
+
+        self.ui.connect_com_button.setEnabled(False)
+        self.ui.refreshe_button.setEnabled(False)
+        self.ui.port_comboBox.setEnabled(False)
+        self.ui.baud_rate_comboBox.setEnabled(False)
+        
+
     def ui_init(self):
         #add com list
         self.refresh_com_list()
         # add baud rate
-        self.ui.comboBox_2.addItems(BAUD_RATE_TABLE)
+        self.ui.baud_rate_comboBox.addItems(BAUD_RATE_TABLE)
         # engines numbers
-        [self.ui.comboBox_3.addItem(str(i)) for i in range(5)]
+        [self.ui.engine_comboBox.addItem(str(i)) for i in range(5)]
         # engine direction
-        self.ui.comboBox_4.addItems(["left", "right"])
+        self.ui.direction_comboBox.addItems(["left", "right"])
         # connect refresh function and button 1
-        self.ui.pushButton.clicked.connect(self.refresh_com_list)
+        self.ui.refreshe_button.clicked.connect(self.refresh_com_list)
         # connect button2 and serialConnect  function
-        self.ui.pushButton_2.clicked.connect(self.serial_connect)
+        self.ui.connect_com_button.clicked.connect(self.serial_connect)
         # connect button_3 to function
         self.ui.move_button.clicked.connect(self.move_button)
         #prepere listView to work with standards models
         self.ui.listView.setModel(self.model)
+        #connect radio butons to the functions
+        self.ui.COM_PORTS.toggled.connect(self.rb_com_ports)
+        self.ui.TCP_IP.toggled.connect(self.rb_tcp_ip)
 
     def show(self):
         self.main_win.show()
