@@ -10,11 +10,12 @@ from serial.tools.list_ports import comports
 import keyboard
 from threading import Thread
 import time
+import socket
 import sys
 
 
 
-BAUD_RATE_TABLE = ("2400",
+BAUD_RATE = ("2400",
                    "4800",
                    "9600",
                    "14400",
@@ -47,7 +48,7 @@ class MainWindow:
         self.main_win = MyMainWindow()
         self.ui = MainWin()
         self.ui.setupUi(self.main_win)
-        self.model = QStandardItemModel()
+        self.listView_model = QStandardItemModel()
         self.serialPort = None
         self.read_port_thread = Thread(target=self.read_port)
         self.keyboard_thread = Thread(target=self.keyboard_remote)
@@ -71,22 +72,53 @@ class MainWindow:
             try:
                 self.serialPort = Serial(port, baud_rate)
                 #view info on view list screen
-                self.model.appendRow(QStandardItem("connected:"))
+                self.listView_model.appendRow(QStandardItem("connected:"))
                 #change text on button
                 self.ui.connect_com_button.setText("Disconnect")
             except SerialException:
                 # view  exception in widget list screen
-                self.model.appendRow(QStandardItem("error: connected problems"))
+                self.listView_model.appendRow(QStandardItem("error: connected problems"))
         else:
             try:
                 self.serialPort.close()
                 # view  info in widget list screen
-                self.model.appendRow(QStandardItem("disconnected:"))
+                self.listView_model.appendRow(QStandardItem("disconnected:"))
                 # change text on button
                 self.ui.connect_com_button.setText("Connect")
             except SerialException:
                 # view  exception in widget list screen
-                self.model.appendRow(QStandardItem("error: disconnect problems"))
+                self.listView_model.appendRow(QStandardItem("error: disconnect problems"))
+
+    def tcp_connect(self, message ):
+        """" create clien tcp, and connect to the addres """
+        #get ip and port
+        ip = self.ui.ip_lineEdit.text()
+        port = self.ui.port_lineEdit.text()
+        MAX_DATA = 512
+
+        #check that it is not empty
+        if len(ip) == 0:
+            self.listView_model.appendRow(QStandardItem("nothig in ip line !!!"))
+            return
+        if len(port) == 0:
+            self.listView_model.appendRow(QStandardItem("nothig in port line !!!"))
+            return
+        try:
+            port = int(port)
+        except ValueError:
+            self.listView_model.appendRow(QStandardItem("Port mast be digit !!!"))
+
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            client.connect((ip, port))
+            client.sendall(message)
+            self.listView_model.appendRow(QStandardItem(client.recv(MAX_DATA).decode()))
+            client.sendall('END_SERVER'.encode())
+            client.close()
+        except (socket.gaierror, TimeoutError) as e:
+            self.listView_model.appendRow(QStandardItem(str(e)))
+
+
 
     def read_port(self):
         while True:
@@ -99,13 +131,15 @@ class MainWindow:
                     serial_string += self.serialPort.read().decode('Ascii')
                 # if string len is 0 do nothing
                 if len(serial_string):
-                    self.model.appendRow(QStandardItem(serial_string))
+                    self.listView_model.appendRow(QStandardItem(serial_string))
             if self.main_win.isclosed:
                 if self.serialPort:
                     self.serialPort.close()
                 break
 
     def keyboard_remote(self):
+        """function sends a frame that corresponds to the assigned keys on keyboard.
+            keys as assigned to the movement of the motors """
         while True:
             time.sleep(0.06)
             if self.serialPort and self.serialPort.is_open:
@@ -128,13 +162,13 @@ class MainWindow:
                     if frame:
                         print(frame)
                         raw_frame = frame.encode()
-                        self.serialPort.write(raw_frame)
+                        self.send_raw_frame(raw_frame)
             # ending thread
             if self.main_win.isclosed:
                 break
 
-    # return events if key was pressed or release
     def key_status(self, key):
+        """function retrun keyboard key status  """
         if not hasattr(self, 'active_keys'):
             # todo: move self.active_keys to the __init__
             self.active_keys = []
@@ -156,7 +190,10 @@ class MainWindow:
         engine = self.ui.engine_comboBox.currentText()
         direction = self.ui.direction_comboBox.currentText()
         direction = '1' if direction == 'left' else '0'
-        steps = self.ui.lineEdit.text()
+        steps = self.ui.steps_lineEdit.text()
+        if len(steps) == 0:
+            self.listView_model.appendRow(QStandardItem('step tex box is empty!!!'))
+            return 
         # parse string , if not hex convert and remove starting '0x'
         if steps[0] != 'x':
             steps = str(hex(int(steps)))[2:]
@@ -165,20 +202,28 @@ class MainWindow:
         # if steps is to short for frame requirements
         if 4 - len(steps):
             count = 4 - len(steps)
-            zeros = ''
-            for i in range(count):
-                zeros += '0'
+            zeros = count * '0'
             steps = zeros + steps
         # get len of useful data
         data_len = len(engine+direction+steps)
         #todo: add comboBox or text_line for 'function' byte
         frame = ':'+str(data_len)+'1'+engine+direction+steps
         raw_frame = frame.encode()
-        # if serialPort exist and is open
-        if self.serialPort and self.serialPort.is_open:
-            self.serialPort.write(raw_frame)
+        self.send_raw_frame(raw_frame)
+
+    def send_raw_frame(self, raw_frame):
+        """Send frame by com port or Wlan """
+        if self.ui.com_port_radioButton.isChecked():
+            # if serialPort exist and is open
+            if self.serialPort and self.serialPort.is_open:
+                self.serialPort.write(raw_frame)
+        else:
+            self.thread = Thread(target=self.tcp_connect, args=[raw_frame])
+            self.thread.start()
+
 
     def rb_com_ports(self):
+        """Enable and disable widgets associated with com radiobuton"""
         self.ui.connect_com_button.setEnabled(True)
         self.ui.refreshe_button.setEnabled(True)
         self.ui.port_comboBox.setEnabled(True)
@@ -189,6 +234,7 @@ class MainWindow:
         self.ui.port_lineEdit.setEnabled(False)
 
     def rb_tcp_ip(self):
+        """Enable and disable widgets associated with ip radiobuton"""
         self.ui.bind_ip_button.setEnabled(True)
         self.ui.ip_lineEdit.setEnabled(True)
         self.ui.port_lineEdit.setEnabled(True)   
@@ -203,7 +249,7 @@ class MainWindow:
         #add com list
         self.refresh_com_list()
         # add baud rate
-        self.ui.baud_rate_comboBox.addItems(BAUD_RATE_TABLE)
+        self.ui.baud_rate_comboBox.addItems(BAUD_RATE)
         # engines numbers
         [self.ui.engine_comboBox.addItem(str(i)) for i in range(5)]
         # engine direction
@@ -215,10 +261,10 @@ class MainWindow:
         # connect button_3 to function
         self.ui.move_button.clicked.connect(self.move_button)
         #prepere listView to work with standards models
-        self.ui.listView.setModel(self.model)
+        self.ui.listView.setModel(self.listView_model)
         #connect radio butons to the functions
-        self.ui.COM_PORTS.toggled.connect(self.rb_com_ports)
-        self.ui.TCP_IP.toggled.connect(self.rb_tcp_ip)
+        self.ui.com_port_radioButton.toggled.connect(self.rb_com_ports)
+        self.ui.tcp_radioButton.toggled.connect(self.rb_tcp_ip)
 
     def show(self):
         self.main_win.show()
