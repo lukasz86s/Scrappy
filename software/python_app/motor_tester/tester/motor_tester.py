@@ -8,7 +8,7 @@ from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from serial import Serial, SerialException
 from serial.tools.list_ports import comports
 import keyboard
-from threading import Thread
+from threading import Thread, Event
 import time
 import socket
 import sys
@@ -52,7 +52,10 @@ class MainWindow:
         self.serialPort = None
         self.read_port_thread = Thread(target=self.read_port)
         self.keyboard_thread = Thread(target=self.keyboard_remote)
-        self.main_win.add_threads_to_close(self.read_port_thread, self.keyboard_thread)
+        self.sending_event = Event()
+        self.sending_thread = Thread(target=self.send_raw_frame_on_event, args=(self.sending_event,))
+        self.sending_thread.daemon = True
+        self.main_win.add_threads_to_close(self.read_port_thread)#, self.keyboard_thread)
         #mapping engines directions to the pairs of keys
         self.control_keys = {'engine1': ['w', 's'],
                              'engine2': ['a', 'd'],
@@ -137,13 +140,14 @@ class MainWindow:
                     self.serialPort.close()
                 break
 
+    #TODO:connect start this function with new button (like keyboard move )or checkbutton
     def keyboard_remote(self):
         """function sends a frame that corresponds to the assigned keys on keyboard.
             keys as assigned to the movement of the motors """
         while True:
             time.sleep(0.06)
             if self.serialPort and self.serialPort.is_open:
-                #todo:maybe ping connection every 1s or cyclical sending information about engine movement
+                #TODO:maybe ping connection every 1s or cyclical sending information about engine movement
                 # keys are connected in pairs, to the opposite side
                 # forward and backward keys are in  control_keys['engine1'][0] and controls_keys['engine1'][1]
                 for i in self.control_keys.keys():
@@ -209,7 +213,9 @@ class MainWindow:
         #todo: add comboBox or text_line for 'function' byte
         frame = ':'+str(data_len)+'1'+engine+direction+steps
         raw_frame = frame.encode()
-        self.send_raw_frame(raw_frame)
+        self.raw_frame = raw_frame
+        self.sending_event.set()
+        #self.send_raw_frame(raw_frame)
 
     def send_raw_frame(self, raw_frame):
         """Send frame by com port or Wlan """
@@ -219,8 +225,22 @@ class MainWindow:
                 self.serialPort.write(raw_frame)
         else:
             self.thread = Thread(target=self.tcp_connect, args=[raw_frame])
+            self.thread.daemon = True
             self.thread.start()
+            
+    def send_raw_frame_on_event(self, event):
+        """Send frame by com port or Wlan """
+        while True:
+            event.wait()
+            if self.ui.com_port_radioButton.isChecked():
+                # if serialPort exist and is open
+                if self.serialPort and self.serialPort.is_open:
+                    self.serialPort.write(self.raw_frame)
+            else:
+                self.tcp_connect(self.raw_frame)
+            event.clear()
 
+            
 
     def rb_com_ports(self):
         """Enable and disable widgets associated with com radiobuton"""
@@ -275,7 +295,9 @@ def startApp():
     main_win = MainWindow()
     main_win.ui_init()
     main_win.read_port_thread.start()
-    main_win.keyboard_thread.start()
+    main_win.sending_thread.start()
+    #TODO: add sender with ip and com handler to keyboard remot function. activate below line with thread 
+    #main_win.keyboard_thread.start()
     main_win.show()
     sys.exit(app.exec())
 
