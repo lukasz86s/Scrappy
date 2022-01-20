@@ -30,22 +30,22 @@ void nvic_init(void)
 
 
 	//ustawienie i w³¹czenie przerwan zewnecznych od przycisków
-	NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	//NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn;
+	//NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+	//NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
+	//NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	//przekazanie ustawien
-	NVIC_Init(&NVIC_InitStructure);
+	//NVIC_Init(&NVIC_InitStructure);
 
 
 
 	// okreslenie jak i na ktorej linni beda generowane przerwana
-	EXTI_InitStructure.EXTI_Line = EXTI_Line0;			// linia zerowa (A0,B0... itp)
-	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;  // przerwanie
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling; // na opadajacym zboczu
-	EXTI_InitStructure.EXTI_LineCmd = ENABLE;				// w³aczenie
+	//EXTI_InitStructure.EXTI_Line = EXTI_Line0;			// linia zerowa (A0,B0... itp)
+	//EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;  // przerwanie
+	//EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling; // na opadajacym zboczu
+	//EXTI_InitStructure.EXTI_LineCmd = ENABLE;				// w³aczenie
 	//przekazanie ustawieñ
-	EXTI_Init(&EXTI_InitStructure);
+	//EXTI_Init(&EXTI_InitStructure);
 
 //	//ustawienie i w³¹czenie przerwan zewnecznych od usart
 	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;

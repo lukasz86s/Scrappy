@@ -17,16 +17,16 @@ import sys
 
 
 BAUD_RATE = ("2400",
-                   "4800",
-                   "9600",
-                   "14400",
-                   "19200",
-                   "28800",
-                   "38400",
-                   "57600",
-                   "76800",
-                   "115200",
-                   "230400")
+             "4800",
+             "9600",
+             "14400",
+             "19200",
+             "28800",
+             "38400",
+             "57600",
+             "76800",
+             "115200",
+             "230400")
 
 class MyMainWindow(QMainWindow):
     def __init__(self):
@@ -72,13 +72,14 @@ class MainWindow:
     def init_threads(self):
         """init threads. init events, queue workin with threads """
         self.read_port_thread = Thread(target=self.read_port)
-        self.keyboard_thread = Thread(target=self.keyboard_remote)
+        self.keyboard_event = Event()
+        self.keyboard_thread = Thread(target=self.keyboard_remote, args=(self.keyboard_event,))
         self.sending_event = Event()
         self.sending_queue = Queue()
         self.sending_thread = Thread(target=self.send_raw_frame_on_event, args=(self.sending_event,))
         #self.sending_thread.daemon = True
         self.main_win.add_threads_to_close(working_threads =(self.read_port_thread, self.keyboard_thread, self.sending_thread),
-                                           thread_events=(self.sending_event, ))
+                                           thread_events=(self.sending_event, self.keyboard_event ))
 
     def serial_connect(self, byte_size=8, stop_bits=1):
         port = self.ui.port_comboBox.currentText().strip()
@@ -154,11 +155,12 @@ class MainWindow:
                 break
 
     #TODO:connect start this function with new button (like keyboard move )or checkbutton
-    def keyboard_remote(self):
+    def keyboard_remote(self, event):
         """function sends a frame that corresponds to the assigned keys on keyboard.
             keys as assigned to the movement of the motors """
         while True:
-            time.sleep(0.06)
+            event.wait()
+            time.sleep(0.05)
             #TODO: add try exept block,  
             if (self.serialPort and self.serialPort.is_open) or self.ui.tcp_radioButton.isChecked():
                 #TODO:maybe ping connection every 1s or cyclical sending information about engine movement
@@ -172,13 +174,13 @@ class MainWindow:
                     frame = None
 
                     if status_f == 'pressed':
-                        frame = ':42' + self.mapping_keys_engines_nr[i] + '0' + 'T'
+                        frame = ':42' + self.mapping_keys_engines_nr[i] + '0' + '1'
                     elif status_b == 'pressed':
-                        frame = ':42' + self.mapping_keys_engines_nr[i] + '1' + 'T'
+                        frame = ':42' + self.mapping_keys_engines_nr[i] + '1' + '1'
                     elif status_f == 'release' or status_b == 'release':
-                        frame = ':42' + self.mapping_keys_engines_nr[i] + '0' + 'F'
+                        frame = ':42' + self.mapping_keys_engines_nr[i] + '0' + '0'
                     if frame:
-                        #TODO: remove after end testing
+                        #TODO: remove print after end testing
                         print(frame)
                         raw_frame = frame.encode()
                         self.send_raw_frame(raw_frame)
@@ -240,7 +242,7 @@ class MainWindow:
         # unpaused sedning thread(stop automaticly after sending)
         self.sending_event.set()
             
-    def send_raw_frame_on_event(self, event):
+    def send_raw_frame_on_event(self, event: Event):
         """Send frame by com port or Wlan """
         while True:
             event.wait()
@@ -281,6 +283,12 @@ class MainWindow:
         self.ui.port_comboBox.setEnabled(False)
         self.ui.baud_rate_comboBox.setEnabled(False)
         
+    def keyboard_thread_management(self):
+        """function starts or pauses the keyboard control thread"""
+        if self.ui.keyboard_enigine_control.isChecked():
+            self.keyboard_event.set()
+        else:
+            self.keyboard_event.clear()
 
     def ui_init(self):
         #add com list
@@ -302,6 +310,8 @@ class MainWindow:
         #connect radio butons to the functions
         self.ui.com_port_radioButton.toggled.connect(self.rb_com_ports)
         self.ui.tcp_radioButton.toggled.connect(self.rb_tcp_ip)
+        #connect checkbox to the function
+        self.ui.keyboard_enigine_control.stateChanged.connect(self.keyboard_thread_management)
 
     def show(self):
         self.main_win.show()

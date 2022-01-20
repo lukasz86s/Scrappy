@@ -18,11 +18,11 @@ void gpio_init(void)
 
 
 	// konfiguracja pionow jako wejscie (do przerwan)
-	//GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
-	//GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	//GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-	//zapisanie ustawien dla portu B
-	//GPIO_Init(GPIOA, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_10MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+	//zapisanie ustawien dla portu A
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
 	// poinformuj uc o zródle przerwan
 	//GPIO_EXTILineConfig(GPIO_PortSourceGPIOA, GPIO_PinSource0);

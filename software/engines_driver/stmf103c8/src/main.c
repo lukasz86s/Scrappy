@@ -163,7 +163,7 @@ void parse_comand(data_buf *rx_buf)
 				GPIO_WriteBit(GPIOB, engines.engine_dir_pins[nr_engine],dir );
 				// set continuous value 1 - work, 0 - stop
 				engines.engine_continuous_work[nr_engine] = continous;
-
+				//strcpy(DMA_TX_buf, "data ok");
 
 			}
 		break;
