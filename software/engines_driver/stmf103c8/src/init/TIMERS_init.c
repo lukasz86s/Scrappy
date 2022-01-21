@@ -38,7 +38,7 @@ void tim1_init(void)
 	TIM_OC1Init(TIM1, &TIM_OCInitStructure);
 
 	// ustweiwnia podstawy czasu
-	TIM_TimBaseStructure.TIM_Period = 19999;
+	TIM_TimBaseStructure.TIM_Period = 19999ul;
 	TIM_TimBaseStructure.TIM_Prescaler = 72; // preskaler 72Mhz/720 = 100khz
 	TIM_TimBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM_TimBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
@@ -46,7 +46,7 @@ void tim1_init(void)
 	 // inicjalizacja wybranych ustawien
 	TIM_TimeBaseInit(TIM3, &TIM_TimBaseStructure);
 
-	// configuring forth(4) channel
+	// configuring first channel
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
 	TIM_OCInitStructure.TIM_Pulse = 1000ul;

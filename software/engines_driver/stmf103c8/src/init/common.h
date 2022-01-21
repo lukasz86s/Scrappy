@@ -34,14 +34,12 @@ volatile void serva_set(void);
 
 //----------------- probne timery-----------------------------
 enum{
-	sys_tim1,			// przyporz¹dkowanie odpowiednich nazw dla nomerow
-	sys_tim2,			// w tablicy licznikow
-	sys_tim3,
-	sys_tim4,
-	sys_tim5,
-	max_timers			// ilosc licznikow
+	SYS_TIM1,			// przyporz¹dkowanie odpowiednich nazw dla nomerow
+	SYS_TIM2,			// w tablicy licznikow
+	SYS_TIM3,
+	MAX_TIMERS			// ilosc licznikow
 };
 
-volatile uint16_t sys_tims[max_timers];
+volatile uint16_t sys_tims[MAX_TIMERS];
 
 #endif /* INIT_COMMON_H_ */

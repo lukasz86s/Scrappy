@@ -137,7 +137,7 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
 	//Petla zliczaj¹ca po koleii timery w dó³
-	for(uint8_t i = 0; i < max_timers; i++)
+	for(uint8_t i = 0; i < MAX_TIMERS; i++)
 	{
 		// jesli wiekszy od 0 to -1 i przypisz wartosc do timera
 		if(sys_tims[i]) --sys_tims[i];
@@ -149,7 +149,14 @@ void SysTick_Handler(void)
 
 
 // mapowanie pinow sterujacych na kolejne pozycje w tablicy
-uint16_t engine_pins[] = {E0_PIN, E1_PIN, E2_PIN, E3_PIN, E4_PIN};
+uint16_t engine_pins[] = {E0_PIN,
+						  E1_PIN,
+						  E2_PIN,
+						  E3_PIN,
+#ifdef ADDITIONAL_STEPER_MOTOR
+						  E4_PIN
+#endif
+						  };
 void TIM1_CC_IRQHandler(void)
 {
 

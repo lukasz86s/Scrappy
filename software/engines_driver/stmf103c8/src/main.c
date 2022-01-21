@@ -33,6 +33,11 @@ void parse_comand(data_buf *rx_buf);
 uint8_t hex_char_to_dec(char hex);
 
 
+enum function_types{
+	MOVE_ENGINE = '1',
+	CONTINOUS_WORK = '2',
+
+};
 
 
 
@@ -56,12 +61,11 @@ int main(void)
 
 
 	// inicjalizacja wstepna timerów wartoscia 0
-	for(uint8_t i = 0; i < max_timers; i++)
+	for(uint8_t i = 0; i < MAX_TIMERS; i++)
 	{
 		sys_tims[i] = 0;
 	}
 
-	sys_tims[sys_tim1] = 20;
 
 	command_recived = 0;
 
@@ -71,39 +75,29 @@ int main(void)
 		while(1);
 	}
 	//DMA_Cmd(DMA1_Channel4, ENABLE);
+	uint8_t servo_swich = 1 ;
 	while(1)
 	{
 
-		//pierwszy licznik (test sprawdzajacy przebieg na wyjsciu)
-		if(!sys_tims[sys_tim1])
-			{
-		    static uint8_t position = 0;
-			position ^=1;
-			if(position){
-				//GPIO_SetBits(GPIOB, GPIO_Pin_4);
-
-			}
-			else{
-				//GPIO_ResetBits(GPIOB, GPIO_Pin_4);
-
-			}
-
-				sys_tims[sys_tim1] = 100;
+				if(!sys_tims[SYS_TIM1]){
 				//USART_ITConfig(USART1, USART_IT_TXE, ENABLE);
 				//USART_SendData(USART1, data_cnt);
 				//USART_SendData(USART1, data_position);
+				//if is in buffer more data than min of frame length, parse data
+					if(wsk_rx->data_size > 5)
+					{
+						parse_comand(find_start_of_frame(wsk_rx));
+					}
+					// testing servo. remove -----------
+					if (TIM3->CCR1 <= 1000) servo_swich = 1;
+					else if(TIM3->CCR1 >= 2000) servo_swich = 0;
 
-				if(wsk_rx->data_size > 5)
-				{
-					parse_comand(find_start_of_frame(wsk_rx));
+					if(servo_swich)TIM3->CCR1++;
+					else TIM3->CCR1--;
+					//-------------------------1
+					// reload timer
+					sys_tims[SYS_TIM1] = 50;
 				}
-
-
-			}
-			//if(command_recived == 15)
-
-
-
 	}
 }
 
@@ -124,7 +118,7 @@ void parse_comand(data_buf *rx_buf)
 	switch(function)
 	{
 	// ruch silnika
-	case '1':
+	case MOVE_ENGINE :
 		// while get all data
 		while(len_of_data>0)
 			{
@@ -151,7 +145,7 @@ void parse_comand(data_buf *rx_buf)
 			// dodac funkcje wykonujaca ruch move_eingin(uint8_t nr_eingine, uint16_t steps)
 
 		break;
-	case '2':
+	case CONTINOUS_WORK:
 			{
 				// get nr of engine
 				uint8_t nr_engine = (buf_readbyte(rx_buf) - '0');
