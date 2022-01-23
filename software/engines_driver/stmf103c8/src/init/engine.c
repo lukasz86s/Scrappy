@@ -18,13 +18,19 @@ uint16_t direction[] = {DIR0_PIN,
 
 
 void init_engines(Engine *wsk){
+	// assign dir_pins array
 	wsk->engine_dir_pins = direction;
+
 	for(uint8_t i = 0; i<NR_OF_ENGINS; i++)
 	{
-		wsk->engine_counter[i] = 3200;
+		wsk->engine_counter[i] = 1600;
 		wsk->engine_speed[i] = 1;
 		wsk->engine_continuous_work[i] = 0;
 		GPIO_SetBits(GPIOB,wsk->engine_dir_pins[i]) ;
 	}
+	// init servo_engine
+	servo_dir = LEFT;
+	servo_status = STOP;
+
 }
 

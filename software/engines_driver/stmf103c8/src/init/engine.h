@@ -49,10 +49,6 @@
 
 #endif
 
-
-
-
-
 typedef
 		struct engine{
 			volatile uint16_t engine_counter[NR_OF_ENGINS];
@@ -60,6 +56,15 @@ typedef
 			volatile uint8_t engine_continuous_work[NR_OF_ENGINS] ;
 			uint16_t *engine_dir_pins ;
 }Engine;
+enum{
+	STOP,
+	WORK
+}servo_status;
+
+enum{
+	LEFT,
+	RIGHT
+}servo_dir;
 
 
 

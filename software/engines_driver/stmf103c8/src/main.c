@@ -21,9 +21,7 @@
 #include "init/USART_init.h"
 #include <string.h>
 
-#define ms_1 100
-#define dir_pin GPIO_Pin_0
-#define puls_pin GPIO_Pin_1
+#define SYS_TIM_1MS 100
 
 
 // funkcja przetwarzajaca ramke
@@ -53,8 +51,6 @@ int main(void)
 	// wy³aczenie jtaga zeby muc uzywac pinB 3 i4
 	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;
 	AFIO->MAPR = AFIO_MAPR_SWJ_CFG_1;
-	// ustawienia pinow portu b w stan niski
-	GPIO_ResetBits(GPIOB, dir_pin|puls_pin);
 	// inicjalizacja parametrów pracy silników
 	init_engines(&engines);
 
@@ -75,7 +71,7 @@ int main(void)
 		while(1);
 	}
 	//DMA_Cmd(DMA1_Channel4, ENABLE);
-	uint8_t servo_swich = 1 ;
+
 	while(1)
 	{
 
@@ -88,15 +84,27 @@ int main(void)
 					{
 						parse_comand(find_start_of_frame(wsk_rx));
 					}
-					// testing servo. remove -----------
-					if (TIM3->CCR1 <= 1000) servo_swich = 1;
-					else if(TIM3->CCR1 >= 2000) servo_swich = 0;
 
-					if(servo_swich)TIM3->CCR1++;
-					else TIM3->CCR1--;
-					//-------------------------1
 					// reload timer
 					sys_tims[SYS_TIM1] = 50;
+				}
+
+
+				// on servo if status is work
+				if(servo_status == WORK){
+					// use SYS_TIM2 to control servo
+					if(!sys_tims[SYS_TIM2]){
+
+							if(servo_dir == LEFT ) TIM3->CCR1 -= 10;
+							else if(servo_dir == RIGHT ) TIM3->CCR1 += 10;
+
+							if(TIM3->CCR1 < 1000) TIM3->CCR1 = 1000;
+							else if(TIM3->CCR1 > 2000) TIM3->CCR1 = 2000;
+
+						//reload timer
+						sys_tims[SYS_TIM2] = 20;
+
+					}
 				}
 	}
 }
@@ -153,10 +161,19 @@ void parse_comand(data_buf *rx_buf)
 				uint8_t dir = (buf_readbyte(rx_buf) - '0');
 				// get continuous vale
 				uint8_t continous = (buf_readbyte(rx_buf) - '0');
-				// set direction output
-				GPIO_WriteBit(GPIOB, engines.engine_dir_pins[nr_engine],dir );
-				// set continuous value 1 - work, 0 - stop
-				engines.engine_continuous_work[nr_engine] = continous;
+				// nr engine 5 is servo, other type control
+				if(nr_engine == 5){
+					servo_dir = dir;
+					//work or stop
+					servo_status = continous;
+
+				}else{
+					// set direction output in steppers motors
+					GPIO_WriteBit(GPIOB, engines.engine_dir_pins[nr_engine],dir );
+					// set continuous value 1 - work, 0 - stop
+					engines.engine_continuous_work[nr_engine] = continous;
+				}
+
 				//strcpy(DMA_TX_buf, "data ok");
 
 			}

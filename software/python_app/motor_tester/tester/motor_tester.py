@@ -63,12 +63,17 @@ class MainWindow:
         self.control_keys = {'engine1': ['w', 's'],
                              'engine2': ['a', 'd'],
                              'engine3': ['up', 'down'],
-                             'engine4': ['left', 'right']}
+                             'engine4': ['left', 'right'],
+                             'servo': ['q', 'e']
+                             }
         # mapping engines to the number
         self.mapping_keys_engines_nr = {'engine1': '0',
                                         'engine2': '1',
                                         'engine3': '2',
-                                        'engine4': '3'}
+                                        'engine4': '3',
+                                        'engine5': '4',
+                                        'servo': '5'
+                                        }
     def init_threads(self):
         """init threads. init events, queue workin with threads """
         self.read_port_thread = Thread(target=self.read_port)
