@@ -6,4 +6,4 @@
 from wifi import WiFi
 from stepstick import A4988
 
-wifi = WiFi('LagunaNET2545', 'superalfons')
+wifi = WiFi('WIFI_NAME', 'PASSWORD')

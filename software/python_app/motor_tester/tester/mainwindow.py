@@ -184,3 +184,11 @@ class Ui_MainWindow(object):
         self.label_4.setText(_translate("MainWindow", "directon"))
         self.label_5.setText(_translate("MainWindow", "steps"))
         self.move_button.setText(_translate("MainWindow", "move"))
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec())
